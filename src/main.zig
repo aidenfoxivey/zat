@@ -20,11 +20,11 @@ pub fn main() !void {
             if (read_result) |line| {
                 const lineStr = line orelse return error.UnexpectedNull;
                 try stdout.print("{s}\n", .{lineStr});
+                try bw.flush();
             } else |err| {
                 return err;
             }
         }
-        try bw.flush();
     } else {
         for (args) |arg| {
             const fname = arg;
