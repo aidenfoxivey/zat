@@ -1,13 +1,17 @@
+const jdz_allocator = @import("jdz_allocator");
 const std = @import("std");
+const Allocator = std.mem.Allocator;
 
-var allocator = std.heap.GeneralPurposeAllocator(.{}){};
-const gpa = allocator.allocator();
 const stdin = std.io.getStdIn().reader();
 const stdout_file = std.io.getStdOut().writer();
 var bw = std.io.bufferedWriter(stdout_file);
 const stdout = bw.writer();
 
 pub fn main() !void {
+    var jdz = jdz_allocator.JdzAllocator(.{}).init();
+    defer jdz.deinit();
+
+    const gpa: Allocator = jdz.allocator();
     const all_args = try std.process.argsAlloc(gpa);
     defer std.process.argsFree(gpa, all_args);
     const args = all_args[1..];
