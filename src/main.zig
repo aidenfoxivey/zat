@@ -2,9 +2,7 @@ const std = @import("std");
 
 var allocator = std.heap.GeneralPurposeAllocator(.{}){};
 const gpa = allocator.allocator();
-var read_buffer: [16384]u8 = undefined;
 const stdin = std.io.getStdIn().reader();
-var buffer: [256]u8 = undefined; // Define a buffer to hold the input
 const stdout_file = std.io.getStdOut().writer();
 var bw = std.io.bufferedWriter(stdout_file);
 const stdout = bw.writer();
@@ -14,9 +12,11 @@ pub fn main() !void {
     defer std.process.argsFree(gpa, all_args);
     const args = all_args[1..];
 
+    var read_buffer: [4096]u8 = undefined;
+
     if (args.len == 0) {
         while (true) {
-            const read_result = stdin.readUntilDelimiterOrEof(&buffer, '\n');
+            const read_result = stdin.readUntilDelimiterOrEof(&read_buffer, '\n');
             if (read_result) |line| {
                 const lineStr = line orelse return error.UnexpectedNull;
                 try stdout.print("{s}\n", .{lineStr});
@@ -31,12 +31,16 @@ pub fn main() !void {
             const file = try std.fs.cwd().openFile(fname, .{});
             defer file.close();
 
+            const file_info = try file.stat();
+            const file_size = file_info.size;
+
+            var file_buffer = try gpa.alloc(u8, file_size);
+            defer gpa.free(file_buffer);
+
             const reader = file.reader();
-            while (true) {
-                const bytes_read = try reader.read(&read_buffer);
-                if (bytes_read == 0) break;
-                try stdout.print("{s}", .{read_buffer[0..bytes_read]});
-            }
+            const bytes_read = try reader.readAll(&read_buffer);
+
+            try stdout.print("{s}", .{file_buffer[0..bytes_read]});
         }
         try bw.flush();
     }
