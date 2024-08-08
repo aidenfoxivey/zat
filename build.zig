@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
     // set a preferred release mode, allowing the user to decide how to optimize.
 
-    const optimize = .ReleaseSmall;
+    const optimize = .ReleaseSafe;
 
     const exe = b.addExecutable(.{
         .name = "zat",
@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .single_threaded = true,
-        .strip = true,
+        .strip = false,
     });
 
     // This declares intent for the executable to be installed into the
